@@ -83,6 +83,7 @@ slaveof IPMASTER 6379
 <<<
 ```
 5. Config file system & run redis on 3 nodes
+
   Copy file redis.service to /etc/systemd/system/
 ```bash
 chown -R redis:daemon /etc/redis/redis.conf
@@ -184,7 +185,9 @@ systemctl enable sentinel.service
 ```
 
 5. Test failover
+
   On Master server
+
 Command enable mode debug, tailf /var/log/redis/sentinel.log to see process select master node
 ```bash
 /usr/local/bin/redis-cli -h IPMASTER -p 16379
