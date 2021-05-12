@@ -1,0 +1,40 @@
+Các biến log sentinel
++slave : là biến phát hiện được node redis slave trong cụm replica
++sentinel: là biến phát hiện được node sentinel trong cụm failover sentinel
++sdown slave: là biến node slave bị down redis
++sdown sentinel: là biến node sentinel bị down
+-sdown slave: là biến node slave up lại sau khi bị down redis
+-sdown sentinel: là biến node sentinel up lại sau khi bị down
+
+--Quá trình bầu chọn sau khi chạy debug sleep
+LAB:
+172.16.44.103 6379	master		16379	sentinel 1
+172.16.44.172 6381	slave-1		16380	sentinel 2
+172.16.44.231 6380	slave-2		16381	sentinel 3
+
+Log:
+# Executing user requested FAILOVER of 'redis-cluster'		///khi chạy lệnh debug sleep hoặc chuyển dự phòng
+# +new-epoch 3
+# +try-failover master redis-cluster 172.16.44.103 6379		///xác nhận node master đã down
+# +vote-for-leader 9f41304b5dd1bc907748505fbef8c2392d971d0b 3		///Bắt đầu bầu chọn leader
+# +elected-leader master redis-cluster 172.16.44.103 6379
+# +failover-state-select-slave master redis-cluster 172.16.44.103 6379
+# +selected-slave slave 172.16.44.172:6381 172.16.44.172 6381 @ redis-cluster 172.16.44.103 6379 	///Chỉ định thằng mới sẽ lên làm master
+* +failover-state-send-slaveof-noone slave 172.16.44.172:6381 172.16.44.172 6381 @ redis-cluster 172.16.44.103 6379
+* +failover-state-wait-promotion slave 172.16.44.172:6381 172.16.44.172 6381 @ redis-cluster 172.16.44.103 6379
+# +promoted-slave slave 172.16.44.172:6381 172.16.44.172 6381 @ redis-cluster 172.16.44.103 6379 	///Thăng chức thằng mới lên làm master
+# +failover-state-reconf-slaves master redis-cluster 172.16.44.103 6379
+* +slave-reconf-sent slave 172.16.44.231:6380 172.16.44.231 6380 @ redis-cluster 172.16.44.103 6379
+* +slave-reconf-inprog slave 172.16.44.231:6380 172.16.44.231 6380 @ redis-cluster 172.16.44.103 6379
+* +slave-reconf-done slave 172.16.44.231:6380 172.16.44.231 6380 @ redis-cluster 172.16.44.103 6379
+# +failover-end master redis-cluster 172.16.44.103 6379
+# +switch-master redis-cluster 172.16.44.103 6379 172.16.44.172 6381 ///chuyển thằng mới thành master
+* +slave slave 172.16.44.231:6380 172.16.44.231 6380 @ redis-cluster 172.16.44.172 6381 ///add 2 thằng kia thành slave trong cụm replica
+* +slave slave 172.16.44.103:6379 172.16.44.103 6379 @ redis-cluster 172.16.44.172 6381 ///add 2 thằng kia thành slave trong cụm replica
+
+
+Các thông số config:
+monitor: Thiết lập cụm redis cluster với tên “redis-cluster”. Chỉ định server IPMASTER làm master hiện tại với quorum = 2(tức khi bầu chọn sẽ cần ít nhất 2 sentinel node đồng ý cho node được select lên làm master)
+down-after-milliseconds: thiết lập khoảng thời gian mili giây mà master server không phản hồi, khi đó nó được xác định là down.
+failover-timeout: khoảng thời gian mà failover lần tiếp theo sau khi thực hiện failover trước đó bị lỗi.
+parallel-syncs: thiết lập số slave mà có thể được cấu hình lại để sử dụng master mới sau khi failover tại một thời điểm. Ở đây, chúng ta thiết lập tại một thời điểm chỉ một slave được sử dụng.
