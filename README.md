@@ -205,6 +205,6 @@ IPMASTER:16379>SENTINEL masters
 ```
 
 ### Config HAProxy
-Add all line from haproxy.cfg to your present config
+Add all line from haproxy.cfg to your present config, remember change to your IP
 
 Web stat only green on master node
