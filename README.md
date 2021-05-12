@@ -175,6 +175,7 @@ chown -R redis:daemon /etc/redis/sentinel.conf
 ```
 
 4. Config file system & run redis on 3 nodes
+
   Copy file sentinel.service to /etc/systemd/system/
 ```bash
 chown -R redis:daemon /etc/redis/sentinel.conf
