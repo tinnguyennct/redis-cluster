@@ -74,4 +74,8 @@ auto-aof-rewrite-percentage 80
 auto-aof-rewrite-min-size 64mb
 aof-load-truncated yes
 aof-use-rdb-preamble yes
+
+  
+File .rdb và .aof lưu ở path /var/redis/
+Khi restore, chỉ cần copy 2 file này bỏ vào thư mục này, lưu ý phải đúng tên file và đường dẫn đã chỉ định ở cấu hình
 ```
