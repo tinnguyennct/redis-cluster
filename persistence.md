@@ -22,3 +22,13 @@ Ví dụ:
 - Thư mục lưu tệp .rdb và cả tệp append-only file .aof:
   dir ./
 2. Append-Only File
+- Với RDB, redis thực hiện dump không đồng bộ dữ liệu trên disk. Chế độ này đủ dùng, nhưng nếu có sự cố với redis(lost power,..) dẫn đến mất vài phút ghi giữa 2 lần snapshot thì có thể mất dữ liệu.
+- Với Append Only File thì dữ liệu sẽ được lưu một cách liên tục và persistence hơn. Tính năng RDB và AOF có thể được bật cùng lúc để bổ trợ nhau mà không ảnh hưởng gì.
+- AOF ghi lại mọi thao tác ghi mà máy chủ nhận được, thao tác này sẽ được phát lại khi khởi động máy chủ, tạo lại tập dữ liệu ban đầu.
+  appendonly no
+- Tên của tệp AOF:
+  appendfilename "appendonly.aof"
+- Đồng bộ dữ liệu được ghi:
+  appendfsync <option>
+  + appendfsync always: fsync mỗi khi các lệnh mới được thêm vào AOF. 
+  + appendfsync everysec: fsync mỗi giây. Đủ nhanh (trong 2,4 có thể nhanh như snapshot) và có thể mất chỉ 1 giây dữ liệu nếu có sự cố.
