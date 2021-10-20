@@ -54,3 +54,24 @@ Ví dụ:
   + appendfsync always: fsync mỗi khi các lệnh mới được thêm vào AOF. 
   + appendfsync everysec: fsync mỗi giây. Đủ nhanh (trong 2,4 có thể nhanh như snapshot) và có thể mất chỉ 1 giây dữ liệu nếu có sự cố.
   ```
+
+3. Full cấu hình persistence:
+  ```bash
+  #RDB - AOF Persistence
+save 900 1
+save 300 10
+save 60 10000
+stop-writes-on-bgsave-error yes
+rdbcompression yes
+dbfilename dump.rdb
+dir ./
+
+appendonly yes
+appendfilename "appendonly.aof"
+appendfsync everysec
+no-appendfsync-on-rewrite no
+auto-aof-rewrite-percentage 80
+auto-aof-rewrite-min-size 64mb
+aof-load-truncated yes
+aof-use-rdb-preamble yes
+```
