@@ -42,9 +42,12 @@ vim /etc/redis/redis.conf
 bind IPMASTER
 port 6379
 daemonize yes
+requirepass "strong-password"
+masterauth "strong-password"
 pidfile "/var/run/redis/redis.pid"
 logfile "/var/log/redis/redis.log"
 dir "/var/redis/"
+maxclients 40000
 <<<
 ```
 3. Config Redis on Slave-1
@@ -58,9 +61,12 @@ vim /etc/redis/redis.conf
 bind IPSALVE1
 port 6380
 daemonize yes
+requirepass "strong-password"
+masterauth "strong-password"
 pidfile "/var/run/redis/redis.pid"
 logfile "/var/log/redis/redis.log"
 dir "/var/redis/"
+maxclients 40000
 slaveof IPMASTER 6379
 <<<
 ```
@@ -76,9 +82,12 @@ vim /etc/redis/redis.conf
 bind IPSALVE2
 port 6381
 daemonize yes
+requirepass "strong-password"
+masterauth "strong-password"
 pidfile "/var/run/redis/redis.pid"
 logfile "/var/log/redis/redis.log"
 dir "/var/redis/"
+maxclients 40000
 slaveof IPMASTER 6379
 <<<
 ```
@@ -119,6 +128,8 @@ sentinel monitor redis-cluster IPMASTER 6379 2
 sentinel down-after-milliseconds redis-cluster 5000
 sentinel parallel-syncs redis-cluster 1
 sentinel failover-timeout redis-cluster 10000
+sentinel auth-pass redis-cluster strong-password
+
 pidfile "/var/run/redis/sentinel.pid"
 logfile "/var/log/redis/sentinel.log"
 dir "/var/redis/"
@@ -142,6 +153,7 @@ sentinel monitor redis-cluster IPMASTER 6379 2
 sentinel down-after-milliseconds redis-cluster 5000
 sentinel parallel-syncs redis-cluster 1
 sentinel failover-timeout redis-cluster 10000
+sentinel auth-pass redis-cluster strong-password
 pidfile "/var/run/redis/sentinel.pid"
 logfile "/var/log/redis/sentinel.log"
 dir "/var/redis/"
@@ -165,6 +177,7 @@ sentinel monitor redis-cluster IPMASTER 6379 2
 sentinel down-after-milliseconds redis-cluster 5000
 sentinel parallel-syncs redis-cluster 1
 sentinel failover-timeout redis-cluster 10000
+sentinel auth-pass redis-cluster strong-password
 pidfile "/var/run/redis/sentinel.pid"
 logfile "/var/log/redis/sentinel.log"
 dir "/var/redis/"
