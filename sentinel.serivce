@@ -3,6 +3,7 @@ Description=Redis-Sentinel
 After=network.target
 
 [Service]
+LimitNOFILE=50000
 Type=forking
 User=redis
 Group=daemon
