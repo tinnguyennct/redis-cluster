@@ -42,3 +42,10 @@ monitor: Thiết lập cụm redis cluster với tên “redis-cluster”. Chỉ
 down-after-milliseconds: thiết lập khoảng thời gian mili giây mà master server không phản hồi, khi đó nó được xác định là down.
 failover-timeout: khoảng thời gian mà failover lần tiếp theo sau khi thực hiện failover trước đó bị lỗi.
 parallel-syncs: thiết lập số slave mà có thể được cấu hình lại để sử dụng master mới sau khi failover tại một thời điểm. Ở đây, chúng ta thiết lập tại một thời điểm chỉ một slave được sử dụng.
+
+Lỗi: Can't open PID file /var/run/redis/sentinel.pid (yet?) after start: No such file or directory
+Fix: Thêm vào file systemd
+ExecStartPost=/bin/sh -c "echo $MAINPID > /var/run/redis/redis.pid"
+
+Lỗi makeinstall
+Chạy: make distclean; make
