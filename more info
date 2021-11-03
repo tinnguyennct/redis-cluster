@@ -33,6 +33,10 @@ Log:
 * +slave slave 172.16.44.103:6379 172.16.44.103 6379 @ redis-cluster 172.16.44.172 6381 ///add 2 thằng kia thành slave trong cụm replica
 
 
+Make install redis from source:
+make distclean; make
+
+
 Các thông số config:
 monitor: Thiết lập cụm redis cluster với tên “redis-cluster”. Chỉ định server IPMASTER làm master hiện tại với quorum = 2(tức khi bầu chọn sẽ cần ít nhất 2 sentinel node đồng ý cho node được select lên làm master)
 down-after-milliseconds: thiết lập khoảng thời gian mili giây mà master server không phản hồi, khi đó nó được xác định là down.
