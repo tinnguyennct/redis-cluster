@@ -45,3 +45,23 @@ ExecStartPost=/bin/sh -c "echo $MAINPID > /var/run/redis/redis.pid"
 
 Lỗi makeinstall
 Chạy: make distclean; make
+
+
+Các lệnh check thông số:
+1. Check thông tin cluster: info replication
+172.16.44.108:6380> info replication
+# Replication
+role:master
+connected_slaves:2
+slave0:ip=172.16.44.96,port=6381,state=online,offset=139021,lag=0
+slave1:ip=172.16.44.100,port=6382,state=online,offset=139167,lag=0
+master_replid:cb8e15fba693c365b98975a4dc714bcf9b1a80b6
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:139312
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:1
+repl_backlog_histlen:139312
+
+2. 
