@@ -1,5 +1,8 @@
 #!/bin/bash
+#README
+#Copy this script to master redis node, sure was setup ssh key between from master to two slave nodes.
 #Excute this script by run command "/path_to_script/install-redis.sh [IP of slave1] [IP of slave2]". Example: /opt/redis/install-redis.sh 10.10.10.10 10.10.10.11
+####
 #Input address of slave
 slave1="$1"
 slave2="$2"
