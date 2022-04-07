@@ -6,7 +6,9 @@
 #Input address of slave
 slave1="$1"
 slave2="$2"
-
+r_port=6379
+s_port=26379
+password="aFx7YuhR6hGm9vPB"
 #Get info ip address
 deviceNIC=$(ip ad | grep ens | awk 'NR==1{print $2}' | cut -d : -f 1);
 masterIP=$(ip addr show $deviceNIC | grep "inet " | awk '{print $2}' | cut -d / -f 1);
@@ -26,18 +28,23 @@ echo never > /sys/kernel/mm/transparent_hugepage/enabled
 echo "transparent_hugepage=never" >> /etc/rc.local
 echo "vm.overcommit_memory=1" >> /etc/sysctl.conf
 echo "net.core.somaxconn=65535" >> /etc/sysctl.conf
+echo "fs.file-max=500000" >> /etc/sysctl.conf
 sysctl -p
 }
 
 masterconfig() {
 cat <<EOF | sudo tee /opt/redis/config/redis.conf
 bind $masterIP
-port 6380
-requirepass "aFx7YuhR6hGm9vPB"
+port $r_port
+requirepass "$password"
 daemonize no
-pidfile "/var/run/redis/redis.pid"
-masterauth "aFx7YuhR6hGm9vPB"
+masterauth "$password"
 maxclients 40000
+timeout 300
+tcp-keepalive 60
+maxmemory 256mb
+maxmemory-policy allkeys-lru
+pidfile "/var/run/redis/redis.pid"
 
 #RDB - AOF Persistence
 save 900 1
@@ -59,13 +66,13 @@ EOF
 
 cat <<EOF | sudo tee /opt/redis/config/sentinel.conf
 bind $masterIP
-port 16380
+port $s_port
 daemonize no
-sentinel monitor redis-cluster $masterIP 6380 2
+sentinel monitor redis-cluster $masterIP $r_port 2
 sentinel down-after-milliseconds redis-cluster 5000
 sentinel parallel-syncs redis-cluster 1
 sentinel failover-timeout redis-cluster 10000
-sentinel auth-pass redis-cluster aFx7YuhR6hGm9vPB
+sentinel auth-pass redis-cluster $password
 pidfile "/var/run/redis/sentinel.pid"
 EOF
 }
@@ -74,11 +81,10 @@ slaveconfig() {
 cat  <<EOF | sudo tee /opt/redis/config/redis.conf
 bind $1
 port $2
-requirepass "aFx7YuhR6hGm9vPB"
+requirepass "$3"
 daemonize no
-pidfile "/var/run/redis/redis.pid"
-masterauth "aFx7YuhR6hGm9vPB"
-slaveof $3 6380
+masterauth "$3"
+slaveof $4 $5
 maxclients 40000
 #RDB - AOF Persistence
 save 900 1
@@ -87,6 +93,11 @@ save 60 10000
 stop-writes-on-bgsave-error yes
 rdbcompression yes
 dbfilename "dump.rdb"
+timeout 300
+tcp-keepalive 60
+maxmemory 256mb
+maxmemory-policy allkeys-lru
+pidfile "/var/run/redis/redis.pid"
 
 appendonly yes
 appendfilename "appendonly.aof"
@@ -99,14 +110,14 @@ aof-use-rdb-preamble yes
 EOF
 
 cat <<EOF | sudo tee /opt/redis/config/sentinel.conf
-bind $4
-port $5
+bind $6
+port $7
 daemonize no
-sentinel monitor redis-cluster $3 6380 2
+sentinel monitor redis-cluster $4 $5 2
 sentinel down-after-milliseconds redis-cluster 5000
 sentinel parallel-syncs redis-cluster 1
 sentinel failover-timeout redis-cluster 10000
-sentinel auth-pass redis-cluster aFx7YuhR6hGm9vPB
+sentinel auth-pass redis-cluster $3
 pidfile "/var/run/redis/sentinel.pid"
 EOF
 }
@@ -150,17 +161,15 @@ compose
 ###########Config on slave
 user=root
 host=($slave1 $slave2)
-portr=(6381 6382)
-ports=(16381 16382)
 
 #Slave1
 typeset -f permission | ssh $user@${host[0]} "$(cat); permission"
 typeset -f systemconfig | ssh $user@${host[0]} "$(cat); systemconfig"
-typeset -f slaveconfig | ssh $user@${host[0]} "$(cat); slaveconfig ${host[0]} ${portr[0]} $masterIP ${host[0]} ${ports[0]}"
+typeset -f slaveconfig | ssh $user@${host[0]} "$(cat); slaveconfig ${host[0]} $r_port $password $masterIP $r_port ${host[0]} $s_port"
 typeset -f compose | ssh $user@${host[0]} "$(cat); compose"
 
 #Slave2
 typeset -f permission | ssh $user@${host[1]} "$(cat); permission"
 typeset -f systemconfig | ssh $user@${host[1]} "$(cat); systemconfig"
-typeset -f slaveconfig | ssh $user@${host[1]} "$(cat); slaveconfig ${host[1]} ${portr[1]} $masterIP ${host[1]} ${ports[1]}"
+typeset -f slaveconfig | ssh $user@${host[1]} "$(cat); slaveconfig ${host[1]} $r_port $password $masterIP $r_port ${host[1]} $s_port"
 typeset -f compose | ssh $user@${host[1]} "$(cat); compose"
