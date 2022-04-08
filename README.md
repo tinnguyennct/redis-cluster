@@ -20,7 +20,7 @@ wget download.redis.io/releases/redis-5.0.5.tar.gz
 tar -xf redis-5.0.5.tar.gz
 cd redis-5.0.5
 make
-make install
+make install //or make distclean; make
 mkdir -p /etc/redis /var/run/redis /var/log/redis /var/redis/
 cp redis.conf redis.conf.bak
 cp redis.conf /etc/redis/redis.conf
